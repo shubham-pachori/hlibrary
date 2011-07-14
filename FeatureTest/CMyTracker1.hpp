@@ -18,6 +18,9 @@ public:
 	~CMyTracker1();
 
 	bool Track(cv::Mat &currentImage);
+	bool AddNewPoints(void);
+	void detectFeatures(cv::Mat &currImg);
+	void timeUpdate();
 };
 
 #endif
