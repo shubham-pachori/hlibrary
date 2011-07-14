@@ -10,6 +10,7 @@
 /// Class
 #include "CParameters.hpp"
 #include  "RobustTrackerWrapper.hpp"
+#include "CMyTracker1.hpp"
 
 #define DEBUG_1	
 #undef	DEBUG_1
@@ -20,6 +21,7 @@ CParameters* g;
 int main(int argc,char* argv[])
 {
 	g = new CParameters();
+	CMyTracker1 trackerTest;
 
 	RobustTrackerWrapper rTracker;
 
@@ -55,8 +57,14 @@ int main(int argc,char* argv[])
 			continue;
 		}
 #endif
-#if 1
+#if 0
 		if(rTracker.Track(g->frameBuf) != true)
+		{
+			continue;
+		}
+#endif
+#if 1
+		if(trackerTest.Track(g->frameBuf) != true)
 		{
 			continue;
 		}
