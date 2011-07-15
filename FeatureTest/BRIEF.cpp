@@ -99,9 +99,26 @@ void BRIEF::getBriefDescriptors(vector< bitset<DESC_LEN> >& descriptors, const v
   // Calculate the integral image:
   cvIntegral(img, integralImage);
 
+#if 1
+  int64 startTime, endTime;
+#endif
+
+  
+	
+
   // Iterate over keypoints:
   for (unsigned int i = 0; i < kpts.size(); ++i)
+  {
+#if 0
+	  startTime = cvGetTickCount();
+#endif
     getBriefDescriptor(descriptors[i], kpts[i], img);
+#if 0
+		endTime = cvGetTickCount();
+		printf("[meas] %f",(endTime-startTime)/(cvGetTickFrequency()*1000.));
+		printf("\n");
+#endif
+  }
 }
 
 void BRIEF::pickTestLocations(void)
