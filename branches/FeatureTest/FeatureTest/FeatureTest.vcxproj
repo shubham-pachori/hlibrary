@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BRIEF.cpp" />
     <ClCompile Include="CFeatTracker.cpp" />
     <ClCompile Include="CMyTracker1.cpp" />
     <ClCompile Include="CParameters.cpp" />
@@ -85,6 +86,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BRIEF.h" />
+    <ClInclude Include="BRIEFWrapper.hpp" />
     <ClInclude Include="CFeatTracker.hpp" />
     <ClInclude Include="CMyTracker1.hpp" />
     <ClInclude Include="CParameters.hpp" />

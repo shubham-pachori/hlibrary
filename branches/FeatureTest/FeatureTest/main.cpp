@@ -12,6 +12,9 @@
 #include  "RobustTrackerWrapper.hpp"
 #include "CMyTracker1.hpp"
 
+/// Brief tester
+#include "BRIEFWrapper.hpp"
+
 #define DEBUG_1	
 #undef	DEBUG_1
 
@@ -24,6 +27,7 @@ int main(int argc,char* argv[])
 	CMyTracker1 trackerTest;
 
 	RobustTrackerWrapper rTracker;
+	CBRIEFWrapper briefTester;
 
 	if(argc == 2)
 	{
@@ -40,7 +44,7 @@ int main(int argc,char* argv[])
 
 	while(1)
 	{
-		g->frameBuf = cv::imread(g->imgSeqPath[g->frameCnt]);
+		g->frameBuf = cv::imread(g->imgSeqPath[g->frameCnt],0);
 		
 #if 0
 		/// pixel based optical flow
@@ -63,13 +67,14 @@ int main(int argc,char* argv[])
 			continue;
 		}
 #endif
-#if 1
+#if 0
 		if(trackerTest.Track(g->frameBuf) != true)
 		{
 			continue;
 		}
 #endif
-
+		briefTester.doDetection(g->frameBuf);
+		printf("%f, %f, %4d\n",briefTester.keypointExtractTime/(cvGetTickFrequency()*1000.),briefTester.bitDescTime/(cvGetTickFrequency()*1000.),briefTester.numKpts);
 
 		cv::imshow("Sequences",g->frameBuf);
 		cv::waitKey(1);
