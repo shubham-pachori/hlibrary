@@ -64,10 +64,9 @@ public:
 	double bitDescTime; // to describe all keypoints with BRIEF descriptor
 	double matchTime; // to find the matches between 2 BRIEF descriptor vector
 	double hmgEstTime; // to estimate the Homography matrix between 2 images
-	double totalMatchTime; // to match the BRIEF descriptors of the incoming frame with all
-	// the BRIEF descriptors stored
+	double totalMatchTime; // to match the BRIEF descriptors of the incoming frame with all the BRIEF descriptors stored
 
-	unsigned int numKpts;
+	unsigned int numKpts;	// the number of Keypoints.
 
 	// Detects the template object in the incoming frame
 	void doDetection(cv::Mat &currImg)
@@ -89,14 +88,15 @@ public:
 		//cv::SurfFeatureDetector detector;
 		//cv::GoodFeaturesToTrackDetector detector;
 
-		/// 歜⑷簪 六六
+		///-------------------------------------------------------- 歜⑷簪 六六
 		cv::Rect rect(CVLAB::IMAGE_PADDING_LEFT, CVLAB::IMAGE_PADDING_TOP,
-		    CVLAB::SUBIMAGE_WIDTH(currImg.cols), CVLAB::SUBIMAGE_HEIGHT(currImg.rows));
+		CVLAB::SUBIMAGE_WIDTH(currImg.cols), CVLAB::SUBIMAGE_HEIGHT(currImg.rows));
  
 		cv::Mat maskMat(currImg.rows,currImg.cols,CV_8U,cv::Scalar(0));
 		cv::Mat maskMat2(CVLAB::SUBIMAGE_HEIGHT(currImg.rows),CVLAB::SUBIMAGE_WIDTH(currImg.cols),CV_8U,cv::Scalar(1));
 		cv::Mat maskROI = maskMat(rect);
 		cv::add(maskROI,maskMat2,maskROI);
+		//--------------------------------------------------------- Make mask.
 
 		detector.detect(currImg,kpts,maskMat);
 		endTime = cvGetTickCount();
