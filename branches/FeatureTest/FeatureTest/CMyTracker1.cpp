@@ -89,15 +89,12 @@ bool CMyTracker1::Track(cv::Mat &currImg)
 
 		/// Descriptor °è»ê.
 		extractor.compute(currImg,trackedKpts,patchDesc);
-		cv::BruteForceMatcher<cv::Hamming> matcher;
 
-		matcher.knnMatch(prevDesc.row(i),patchDesc, 
-			matches, // vector of matches (up to 2 per entry) 
-			1);		  // return 2 nearest neighbours
-
-		// answer : matches[0][0].trainIdx
-		extractor.,
-
-		printf("%d\n",matches[0][0].trainIdx);
+		/// purge
+		//trackedKpts.clear();
+		//patchDesc.deallocate();
+		
+		printf(".");
 	}
+	printf("#");
 }
