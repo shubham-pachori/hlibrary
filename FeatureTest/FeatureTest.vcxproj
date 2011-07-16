@@ -92,6 +92,7 @@
     <ClInclude Include="CMyTracker1.hpp" />
     <ClInclude Include="CParameters.hpp" />
     <ClInclude Include="CTracker.hpp" />
+    <ClInclude Include="featureTrack.h" />
     <ClInclude Include="matcher.h" />
     <ClInclude Include="RobustTrackerWrapper.hpp" />
   </ItemGroup>

@@ -24,6 +24,7 @@ static const int NUMBER_OF_SCALE_STEPS = 3;
 // will be stored in the 2-D array for each scale.
 static const int NUMBER_OF_ROTATION_STEPS = 18;
 
+/// Brief Wrapper class.
 class CBRIEFWrapper
 {
 private:
