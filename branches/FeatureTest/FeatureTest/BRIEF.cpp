@@ -99,12 +99,9 @@ void BRIEF::getBriefDescriptors(vector< bitset<DESC_LEN> >& descriptors, const v
   // Calculate the integral image:
   cvIntegral(img, integralImage);
 
-#if 1
+#if 0
   int64 startTime, endTime;
 #endif
-
-  
-	
 
   // Iterate over keypoints:
   for (unsigned int i = 0; i < kpts.size(); ++i)

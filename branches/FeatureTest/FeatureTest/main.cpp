@@ -14,6 +14,7 @@
 
 /// Brief tester
 #include "BRIEFWrapper.hpp"
+#include "featureTrack.h"
 
 #define DEBUG_1	
 #undef	DEBUG_1
@@ -28,6 +29,8 @@ int main(int argc,char* argv[])
 
 	RobustTrackerWrapper rTracker;
 	CBRIEFWrapper briefTester;
+
+	HLIB::CFeature2DPool featurePool;
 
 	if(argc == 2)
 	{
@@ -73,8 +76,37 @@ int main(int argc,char* argv[])
 			continue;
 		}
 #endif
+#if 0
 		briefTester.doDetection(g->frameBuf);
 		printf("%f, %f, %4d\n",briefTester.keypointExtractTime/(cvGetTickFrequency()*1000.),briefTester.bitDescTime/(cvGetTickFrequency()*1000.),briefTester.numKpts);
+#endif
+		cv::FastFeatureDetector detector(40);
+		cv::BriefDescriptorExtractor extractor(32); //this is really 32 x 8 matches since they are binary matches packed into bytes
+
+		std::vector<cv::KeyPoint> currKpts;
+		static cv::Mat currDesc;
+		static cv::Mat prevDesc;
+
+		detector.detect(g->frameBuf,currKpts);
+		extractor.compute(g->frameBuf,currKpts,currDesc);
+
+		//cv::BruteForceMatcher<cv::HammingLUT> matcher;
+		//std::vector<cv::DMatch> matches;
+		cv::HammingLUT()
+
+		//matcher.match(currDesc,prevDesc,matches);
+
+		//printf("%d\n",currDesc.row(1));
+		std::cout << currDesc.row(1) << std::endl;
+
+		currKpts.clear();
+
+		cv::swap(prevDesc,currDesc);
+
+		if(!currDesc.empty())
+		{
+			currDesc.release();
+		}
 
 		cv::imshow("Sequences",g->frameBuf);
 		cv::waitKey(1);
