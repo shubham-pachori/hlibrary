@@ -12,6 +12,7 @@
     <TargetName>$(ProjectName)</TargetName>
     <IncludePath>c:\OpenCV2.3\build\include;$(IncludePath)</IncludePath>
     <LibraryPath>c:\OpenCV2.3\build\x86\vc10\lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>C:\OpenCV2.3\opencv\modules\features2d\src;C:\OpenCV2.3\opencv\modules\calib3d\src;C:\OpenCV2.3\opencv\modules\contrib\src;C:\OpenCV2.3\opencv\modules\core\src;C:\OpenCV2.3\opencv\modules\highgui\src;C:\OpenCV2.3\opencv\modules\imgproc\src;C:\OpenCV2.3\opencv\modules\stitching;$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>

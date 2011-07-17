@@ -153,9 +153,15 @@ int main(int ac, char ** av)
 
     Mat train_desc, query_desc;
     const int DESIRED_FTRS = 500;
-    GridAdaptedFeatureDetector detector(new FastFeatureDetector(10, true), DESIRED_FTRS, 4, 4);
+    //GridAdaptedFeatureDetector detector(new FastFeatureDetector(10, true), 25, 4, 4);
+	//GridAdaptedFeatureDetector detector(new DynamicAdaptedFeatureDetector(new FastAdjuster(),100,200,5), 0, 4, 4);
+	//GridAdaptedFeatureDetector detector(new cv::GoodFeaturesToTrackDetector(100,0.01,30), DESIRED_FTRS, 4, 4);
+	//GridAdaptedFeatureDetector detector(new cv::SurfFeatureDetector, DESIRED_FTRS, 4, 4);
+
+	DynamicAdaptedFeatureDetector detector(new FastAdjuster(),100,200,5);
 
     Mat H_prev = Mat::eye(3, 3, CV_32FC1);
+
     for (;;)
     {
         capture >> frame;
@@ -166,16 +172,36 @@ int main(int ac, char ** av)
 
         detector.detect(gray, query_kpts); //Find interest points
 
+#if 0
+		static int64 startTime, endTime;
+		/// brief descriptor 추출속도 테스트
+		vector<KeyPoint> testKpts;
+		for(int x=0;x<320;x++)
+			for(int y=0;y<240;y++)
+			{
+				KeyPoint test(x,y,6);
+				testKpts.push_back(test);
+			}
+
+		startTime = cvGetTickCount();
+		brief.compute(gray,testKpts,query_desc);
+		endTime = cvGetTickCount();
+		printf("%f\n",(endTime-startTime)/(cvGetTickFrequency()*1000.));
+#endif
+
         brief.compute(gray, query_kpts, query_desc); //Compute brief descriptors at each keypoint location
 
+		/// train_kpts가 비어있지 않으면.
         if (!train_kpts.empty())
         {
 
             vector<KeyPoint> test_kpts;
-            warpKeypoints(H_prev.inv(), query_kpts, test_kpts);
+            warpKeypoints(H_prev.inv(), query_kpts, test_kpts); /// test_kpts에 변환된 것이 저장된다.
 
+			// 이 부분에서 pixel disparity가 일정 이하인 것만 조사하네. 천재.
             Mat mask = windowedMatchingMask(test_kpts, train_kpts, 25, 25);
             desc_matcher.match(query_desc, train_desc, matches, mask);
+
             drawKeypoints(frame, test_kpts, frame, Scalar(255, 0, 0), DrawMatchesFlags::DRAW_OVER_OUTIMG);
 
             matches2points(train_kpts, query_kpts, matches, train_pts, query_pts);
