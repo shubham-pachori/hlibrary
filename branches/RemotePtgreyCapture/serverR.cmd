@@ -1,0 +1,1 @@
+bin\RemotePtgreyCapture.exe server

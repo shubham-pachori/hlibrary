@@ -1,0 +1,1 @@
+bin\RemotePtgreyCaptureD.exe client
