@@ -10,8 +10,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>$(ProjectName)D</TargetName>
-    <IncludePath>c:\OpenCV2.3\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\OpenCV2.3\build\x86\vc10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>c:\OpenCV2.2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenCV2.2\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
