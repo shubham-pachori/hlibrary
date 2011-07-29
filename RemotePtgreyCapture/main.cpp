@@ -6,12 +6,13 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "RakPeerInterface.h"
 #include "BitStream.h"
 #include "MessageIdentifiers.h"
 #include "GetTime.h"
-#include "RakSleep.h"
+#include "RakSleep.h" 
 
 #include <cstdio>
 #include <memory.h>
@@ -56,6 +57,17 @@ typedef struct _imageData {
 	Image *ptgreyImgStruct;
 } HyonImageData;
 
+/// image remote send
+#pragma pack(push,1)
+typedef struct _imageBuffer{
+	int rows; // 4
+	int cols; // 4
+	char* pData; // 4 byte.
+	int type; // 4
+	int pSize; // 4
+} RemoteImageData;
+#pragma pack(pop)
+
 long activeItems = 1L;		/// Thread pool counter.
 HANDLE hStorageThreadHandle;/// Stay until save is done.
 long frameNum = 1L;
@@ -70,14 +82,43 @@ bool gotPong = false;
 time_t rawtime;
 char fPrefix[0xff];
 
+bool isImageRequested = false;	/// image remote send.
+
+/// OpenCV
+cv::Mat frame;
+cv::VideoCapture capture;
+
 /// System meassge define.
 enum
 {
 	ID_START_CAPTURE = ID_USER_PACKET_ENUM,	/// Let's start capture!
 	ID_STOP_CAPTURE,							/// Stop capture please.
 	ID_CHECK_LIFE,
-	ID_THIS_IS_CHAT
+	ID_THIS_IS_CHAT,
+	ID_SEND_IMAGE,
+	ID_IMAGE_BUFFER
 };
+
+void ViewRemoteImage(void)
+{
+	char message[2] = {ID_SEND_IMAGE,0};
+
+	if(isServer == true)
+	{
+		rakServer->Send((char*)message,2,HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+	}
+
+	time(&rawtime);
+	std::ostringstream sTime;
+	std::string t;
+	sTime << ctime(&rawtime);
+	t = sTime.str();
+	t = t.substr(0,t.length()-1);
+	
+	std::cout << "[" << t;
+
+	printf("] ID_SEND_IMAGE sent to client\n");
+}
 
 void StartCaptureTrigger(void)
 {
@@ -227,14 +268,15 @@ int main(int argc,char** argv)
 
 	printf("Application build date: %s %s\n", __DATE__, __TIME__ );
 
-	//while (1)
-	//{
 	if(isServer == false) /// Client
 	{
 		RakNet::SocketDescriptor socketDescriptor(PORT-1,0);
 		socketDescriptor.socketFamily=AF_INET; // Only IPV4 supports broadcast on 255.255.255.255
 		rakClient->Startup(1, &socketDescriptor, 1);
+		rakClient->SetTimeoutTime(5000,RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+		printf("Client started, waiting for connections.\n");
 
+#ifdef _PTGREY_
 		if(InitializePtgreyCam() > 0)
 		{
 			printf("Camera is initialized!\n");
@@ -260,8 +302,14 @@ int main(int argc,char** argv)
 				exit(EXIT_FAILURE);
 			}
 		}
+#endif
 
-		//break;
+		capture.open(0);
+
+		if (!capture.isOpened())
+		{
+			exit(EXIT_FAILURE);
+		}
 	}
 	else if (isServer == true) /// Server case
 	{
@@ -270,6 +318,7 @@ int main(int argc,char** argv)
 		socketDescriptor.socketFamily=AF_INET; // Only IPV4 supports broadcast on 255.255.255.255
 		b = rakServer->Startup(32,&socketDescriptor, 1)==RakNet::RAKNET_STARTED;
 		rakServer->SetMaximumIncomingConnections(32);
+		rakServer->SetTimeoutTime(5000,RakNet::UNASSIGNED_SYSTEM_ADDRESS);
 
 		isConnected = true;
 			
@@ -280,10 +329,7 @@ int main(int argc,char** argv)
 			printf("Server failed to start.  Terminating.\n");
 			exit(EXIT_FAILURE);
 		}
-
-		//break;
 	}
-	//}
 
 	printf("Entering main loop.  Press 'q' to quit\n");
 
@@ -300,28 +346,45 @@ int main(int argc,char** argv)
 	/// Both client/server
 	CreateTimerQueueTimer(&hTimerPacketReceiver,NULL,PacketReceiverThread,NULL,300,300,0);
 
-	// Capture thread.
-#if 0
-	if(isServer != true)
-	{
-		BOOL ret = QueueUserWorkItem(CaptureThread,0,0);
-
-		if(!ret)
-		{
-			printf("Error occurred during thread pooling...");
-		
-			return -1;
-		}
-	}
-#endif 
-
 	ch=0;
 
 	while (isHalt != true)
 	{
+		/// non blocking io func.
 		if (kbhit())
 		{
 			ch = getch();
+		}
+
+		if(isServer != true && isConnected == true  && rakClient->GetSystemAddressFromIndex(0)!=RakNet::UNASSIGNED_SYSTEM_ADDRESS)
+		{
+			capture >> frame;
+			cv::imshow("sframe", frame);
+			//cv::waitKey(20);
+
+			if(isImageRequested == true)
+			{
+				isImageRequested = false;
+				unsigned char* msg = new unsigned char[frame.rows*frame.cols*frame.channels() + 1];
+				printf("%d\n",frame.rows*frame.cols*frame.channels() + 1);
+				*(msg+0) = ID_IMAGE_BUFFER;
+				memcpy(msg+1,frame.data,frame.rows*frame.cols*frame.channels());
+				//rakClient->Send((const char*)msg,frame.rows*frame.cols*frame.channels() + 1,LOW_PRIORITY, RELIABLE_ORDERED_WITH_ACK_RECEIPT, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+				rakClient->Send((const char*)msg,frame.rows*frame.cols*frame.channels() + 1,LOW_PRIORITY, RELIABLE_ORDERED_WITH_ACK_RECEIPT, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+
+				printf("%d\n",frame.type());
+#if 0
+				RemoteImageData rimage;
+				rimage.pData = new char[frame.rows * frame.cols * frame.depth()];
+				memcpy(rimage.pData,frame.data,frame.rows * frame.cols * frame.depth());
+				rimage.cols = frame.cols;
+				rimage.rows = frame.rows;
+				rimage.type = frame.type();
+				rimage.pSize = frame.rows * frame.cols * frame.depth();
+#endif
+				//printf("%d\n",strlen(rimage));
+				// do image send here.
+			}
 		}
 
 		if(ch=='q')
@@ -329,19 +392,23 @@ int main(int argc,char** argv)
 			isHalt = true;
 		}
 
-		/// only for server
 		if(ch == 'x' && isServer == true)
 		{
 			StopCaptureTrigger();
 		}
 
-		/// only for client
 		if(ch == 'c' && isServer == true)
 		{
 			StartCaptureTrigger();
 		}
+		
+		if(ch == 'v' && isServer == true)
+		{
+			ViewRemoteImage();
+		}
 
 		ch = 0;
+		cvWaitKey(10);
 	}
 
 	/// Stop timer (for client)
@@ -351,10 +418,6 @@ int main(int argc,char** argv)
 	DeleteTimerQueueTimer(NULL,hTimerPacketReceiver,NULL);
 
 	printf("Wait for threads...\n");
-
-	/// TODO : Send a signal to thread to exit.
-
-	//WaitForMultipleObjects(MAX_THREADS, hThreadArray, TRUE, INFINITE);
 
 	InterlockedDecrement( &activeItems );
 
@@ -377,16 +440,7 @@ int main(int argc,char** argv)
 	{
 		Error error;
 
-		// Stop capturing images
-#if 0
-		error = cam.StopCapture();
-
-		if (error != PGRERROR_OK)
-		{
-			PrintError( error );
-		}
-#endif
-
+#ifdef _PTGREY_
 		// Disconnect the camera
 		error = cam.Disconnect();
 
@@ -398,6 +452,7 @@ int main(int argc,char** argv)
 		{
 			printf("Camera release done.\n" );
 		}
+#endif
 	}
 
 	getch();
@@ -622,6 +677,8 @@ void CALLBACK PacketReceiverThread(void*,BOOLEAN)
 
 		Error pgerror;
 
+		IplImage *img;
+
 		switch (packetIdentifier)
 		{
 			case ID_TIMESTAMP:
@@ -707,18 +764,6 @@ void CALLBACK PacketReceiverThread(void*,BOOLEAN)
 
 							frameNum = 0;
 						}
-#if 0
-						BOOL ret = QueueUserWorkItem(CaptureThread,0,0);
-
-						if(!ret)
-						{
-							PrintToNetwork("Error occurred during thread pooling...");
-						}
-						else
-						{
-							PrintToNetwork("Capture is started.");
-						}
-#endif
 					}
 				}
 				break;
@@ -747,6 +792,21 @@ void CALLBACK PacketReceiverThread(void*,BOOLEAN)
 			case ID_THIS_IS_CHAT:
 				time(&rawtime); sTime << ctime(&rawtime); t = sTime.str(); t = t.substr(0,t.length()-1); std::cout << "[" << t;
 				printf(",MESSAGE] : %s\n",&packet->data[1]);
+				break;
+
+			case ID_SEND_IMAGE:
+				printf("Server request image\n");
+				isImageRequested = true;
+				break;
+
+			case ID_IMAGE_BUFFER:
+				printf("Image buffer ################");
+				//img = new cv::Mat(640,480,16,packet->data[1]);
+				img = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+				img->imageData = (char*)(packet->data+1);
+				//cv::imshow("test",img);
+				cvShowImage("test",img);
+				cvWaitKey(1);
 				break;
 
 			default:
