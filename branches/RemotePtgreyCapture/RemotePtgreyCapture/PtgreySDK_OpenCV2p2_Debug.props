@@ -5,12 +5,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\OpenCV2.2\include;$(SolutionDir)RakNet_PC-4.021\Source;C:\Program Files\Point Grey Research\FlyCapture2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\OpenCV2.3\build\include;$(SolutionDir)RakNet_PC-4.021\Source;C:\Program Files\Point Grey Research\FlyCapture2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>FlyCapture2.lib;opencv_core220d.lib;opencv_highgui220d.lib;opencv_imgproc220d.lib;opencv_features2d220d.lib;opencv_calib3d220d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>c:\OpenCV2.2\lib;C:\Program Files\Point Grey Research\FlyCapture2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FlyCapture2.lib;opencv_core230d.lib;opencv_highgui230d.lib;opencv_imgproc230d.lib;opencv_features2d230d.lib;opencv_calib3d230d.lib;opencv_video230d.lib;opencv_flann230d.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>c:\OpenCV2.3\build\x86\vc10\lib;C:\Program Files\Point Grey Research\FlyCapture2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
 </Project>
